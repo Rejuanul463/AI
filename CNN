@@ -1,0 +1,37 @@
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv1D, Flatten, Dense, Input, Reshape
+
+# CNN expects 3D input: (batch_size, steps, features)
+# We reshape x from (batch_size, 1) to (batch_size, 1, 1)
+
+model = Sequential([
+    Input(shape=(1, 1)),  # 1 time step, 1 feature
+    Conv1D(32, kernel_size=1, activation='relu'),
+    Conv1D(64, kernel_size=1, activation='relu'),
+    Conv1D(128, kernel_size=1, activation='relu'),
+    Flatten(),
+    Dense(1)
+])
+
+model.summary()
+
+
+# reshape from (10000,) to (10000, 1, 1)
+X_train_cnn = X_train.reshape(-1, 1, 1)
+X_val_cnn = X_val.reshape(-1, 1, 1)
+X_test_cnn = X_test.reshape(-1, 1, 1)
+
+
+model.compile(optimizer='adam',
+              loss='mse',
+              metrics=[keras.metrics.R2Score()])
+
+history = model.fit(X_train_cnn, y_train, epochs=10, validation_data=(X_val_cnn, y_val))
+
+
+
+test_loss, test_r2 = model.evaluate(X_test_cnn, y_test)
+print("Test Loss:", test_loss)
+print("Test R² Score:", test_r2)
+
+predictions = model.predict(X_test_cnn)
